@@ -1,0 +1,12 @@
+TwitterExtractor
+=========
+Extracts data from mongo and fills a postgres and neo4j with analyzed data.
+
+
+How to use it?
+==============
+
+A mongodb must run at localhost:27017 with a collection named "twitterdb" that contains twitter data.
+A postgres db must run at localhost:5432 with the db named "twitterdb" accessible by user postgres/postgres.
+
+TODO
