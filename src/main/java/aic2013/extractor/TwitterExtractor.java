@@ -10,6 +10,7 @@ import aic2013.extractor.entities.TwitterUser;
 
 import com.mongodb.MongoClient;
 
+import java.io.FileInputStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +32,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.User;
 
 /**
- * 
+ *
  * @author Christian
  */
 public class TwitterExtractor {
@@ -43,8 +44,12 @@ public class TwitterExtractor {
 		Neo4jConnection neo4j = null;
 
 		try {
-			emf = Persistence.createEntityManagerFactory("twitterdb");
-			final String mongoServer = "ec2-54-217-131-208.eu-west-1.compute.amazonaws.com";
+			// Database configuration
+			Properties prop = new Properties();
+      prop.load(new FileInputStream("hibernate.properties"));
+
+			emf = Persistence.createEntityManagerFactory("twitterdb", prop);
+			final String mongoServer = "localhost";
 			mongoClient = new MongoClient(mongoServer);
 			twitter = TwitterFactory.getSingleton();
 
@@ -96,7 +101,7 @@ public class TwitterExtractor {
 //													t);
 //								}
 //							}
-							
+
 							extractionCoordinator.doExtraction(status,
 								new TopicExtractionCallback() {
 
