@@ -26,13 +26,10 @@ public class TopicExtractionCoordinatorImpl implements TopicExtractionCoordinato
 		 * However, using only 1 thread might not be a problem since the bottleneck might be on the
 		 * neo4j query side.
 		 */
-		executorService = Executors.newFixedThreadPool(1);
+		executorService = Executors.newSingleThreadExecutor();//newFixedThreadPool(1);
 	}
 	@Override
 	public void doExtraction(final String input, final TopicExtractionCallback callback) {
-		executorService.execute(new Runnable(){
-			@Override
-			public void run() {
 				Set<Topic> extractedTopics = null;
 				try {
 					extractedTopics = getExtractor().extract(input);
@@ -40,8 +37,18 @@ public class TopicExtractionCoordinatorImpl implements TopicExtractionCoordinato
 					callback.handleExtractionError(e);
 				}
 				callback.handleExtractionResult(extractedTopics);
-			}
-		});
+//		executorService.execute(new Runnable(){
+//			@Override
+//			public void run() {
+//				Set<Topic> extractedTopics = null;
+//				try {
+//					extractedTopics = getExtractor().extract(input);
+//				} catch (ExtractionException e) {
+//					callback.handleExtractionError(e);
+//				}
+//				callback.handleExtractionResult(extractedTopics);
+//			}
+//		});
 	}
 	
 	private TopicExtractor getExtractor() throws ExtractionException{

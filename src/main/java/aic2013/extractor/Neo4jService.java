@@ -49,16 +49,16 @@ public class Neo4jService {
             Logger.getLogger(TwitterExtractor.class.getName())
                 .log(Level.SEVERE, null, ex);
         } finally {
-            try {
-                if (rollbackOnly) {
-                    connection.rollback();
-                } else {
-                    connection.commit();
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(TwitterExtractor.class.getName())
-                    .log(Level.SEVERE, null, ex);
-            }
+//            try {
+//                if (rollbackOnly) {
+//                    connection.rollback();
+//                } else {
+//                    connection.commit();
+//                }
+//            } catch (SQLException ex) {
+//                Logger.getLogger(TwitterExtractor.class.getName())
+//                    .log(Level.SEVERE, null, ex);
+//            }
         }
     }
 

@@ -46,7 +46,8 @@ public class TwitterExtractor {
 		try {
 			// Database configuration
 			Properties prop = new Properties();
-      prop.load(new FileInputStream("hibernate.properties"));
+      //prop.load(new FileInputStream("hibernate.properties"));
+      prop.load(TwitterExtractor.class.getClassLoader().getResourceAsStream("hibernate.properties"));
 
 			emf = Persistence.createEntityManagerFactory("twitterdb", prop);
 			final String mongoServer = "localhost";
@@ -56,7 +57,7 @@ public class TwitterExtractor {
 //			final String neo4jJdbc = "jdbc:neo4j:ec2-54-217-131-208.eu-west-1.compute.amazonaws.com:7474";
 			final String neo4jJdbc = "jdbc:neo4j://localhost:7474";
 			neo4j = new Driver().connect(neo4jJdbc, new Properties());
-			neo4j.setAutoCommit(false);
+			neo4j.setAutoCommit(true);//false);
 
 			final TwitterDataAccess twitterDataAccess = new TwitterDataAccess(
 					twitter);
