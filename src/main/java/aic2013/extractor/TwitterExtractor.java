@@ -46,8 +46,8 @@ public class TwitterExtractor {
 		try {
 			// Database configuration
 			Properties prop = new Properties();
-      //prop.load(new FileInputStream("hibernate.properties"));
-      prop.load(TwitterExtractor.class.getClassLoader().getResourceAsStream("hibernate.properties"));
+      prop.load(new FileInputStream("hibernate.properties"));
+      // prop.load(TwitterExtractor.class.getClassLoader().getResourceAsStream("hibernate.properties"));
 
 			emf = Persistence.createEntityManagerFactory("twitterdb", prop);
 			final String mongoServer = "localhost";
