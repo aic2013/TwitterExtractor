@@ -70,7 +70,7 @@ public class Neo4jService {
     }
 
     public void createTopicIfAbsent(Topic topic) throws SQLException {
-        StringBuilder sb = new StringBuilder().append("MERGE (topic:")
+        StringBuilder sb = new StringBuilder().append("MERGE (topic: ")
             .append(topic.toNeo4j())
             .append(")");
         query(sb.toString());

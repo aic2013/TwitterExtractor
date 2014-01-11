@@ -6,13 +6,16 @@
 
 package aic2013.extractor;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
@@ -33,6 +36,21 @@ public class MongoDataAccess {
 		DB db = mongoClient.getDB( "twitterdb" );
 		DBCollection statusCollection = db.getCollection("statuses");
         DBCursor cursor = statusCollection.find();
+        
+        while(cursor.hasNext()) {
+            try {
+                processor.process(DataObjectFactory.createStatus(cursor.next().toString()));
+            } catch (TwitterException ex) {
+                Logger.getLogger(MongoDataAccess.class.getName())
+                    .log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public void forAllByUserId(long id, Processor<Status> processor){
+    	DB db = mongoClient.getDB( "twitterdb" );
+		DBCollection statusCollection = db.getCollection("statuses");
+        DBCursor cursor = statusCollection.find(new BasicDBObject("user.id", id));
         
         while(cursor.hasNext()) {
             try {

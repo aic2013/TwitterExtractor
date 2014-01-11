@@ -6,38 +6,44 @@
 
 package aic2013.extractor.entities;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Christian
  */
 public class Topic {
     
-    private String name;
+    private String[] keywords;
 
-    public Topic(String name) {
-        this.name = name;
+    public Topic(String[] keywords) {
+        this.keywords = keywords;
     }
     
     public String toNeo4j() {
-        StringBuilder sb = new StringBuilder("Topic {");
-        sb.append("name: '").append(name);
-        sb.append("'}");
+        StringBuilder sb = new StringBuilder("Topic {keywords: [");
+        for(String keyword : keywords){
+        	sb.append("'").append(keyword).append("',");
+        }
+        if(keywords.length > 0)
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("]}");
         return sb.toString();
     }
 
-    public String getName() {
-        return name;
+    public String[] getName() {
+        return keywords;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String[] keywords) {
+        this.keywords = keywords;
     }
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + Arrays.hashCode(keywords);
 		return result;
 	}
 
@@ -50,13 +56,11 @@ public class Topic {
 		if (getClass() != obj.getClass())
 			return false;
 		Topic other = (Topic) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
+		if (!Arrays.equals(keywords, other.keywords))
 			return false;
 		return true;
 	}
-    
+
+	
     
 }

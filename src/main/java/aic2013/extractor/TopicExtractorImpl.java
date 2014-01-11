@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -17,6 +19,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cc.mallet.classify.tui.Text2Vectors;
 import cc.mallet.topics.tui.Vectors2Topics;
@@ -28,12 +32,18 @@ import aic2013.extractor.entities.Topic;
  *
  */
 public class TopicExtractorImpl implements TopicExtractor {
-
+	private static Logger logger = Logger.getLogger(TopicExtractorTest.class
+			.getSimpleName());
+	
 	private final File rawTweetFile;
 	private final Path rawTweetDir;
 	private final File vectorsFile;
 	private final File topicsFile;
-
+	private final TextFilter filter;
+	
+	private final CharsetEncoder asciiEncoder = Charset.forName(
+			"US-ASCII").newEncoder();
+	
 	public TopicExtractorImpl() throws ExtractionException {
 		try {
 			rawTweetDir = Files.createTempDirectory("rawTweetDir");
@@ -43,6 +53,7 @@ public class TopicExtractorImpl implements TopicExtractor {
 			vectorsFile.deleteOnExit();
 			topicsFile = Files.createTempFile("tweetTopics", ".txt").toFile();
 			topicsFile.deleteOnExit();
+			filter = new PrefixFilter("#", new PrefixFilter("@", new PrefixFilter("http", new GlobalPrefixFilter("RT", false, new BaseFilter()))));
 		} catch (IOException e) {
 			throw new ExtractionException(e);
 		}
@@ -51,34 +62,41 @@ public class TopicExtractorImpl implements TopicExtractor {
 	@Override
 	public Set<Topic> extract(String input) throws ExtractionException {
 		PrintStream rawTweetOutStream = null;
-//		FileOutputStream rawTweetOutStream = null;
 		BufferedReader topicInputStream = null;
 		try {
+			if (!asciiEncoder.canEncode(input)) {
+				logger.log(Level.WARNING,
+						"Non-ASCII tweet encountered");
+				return new HashSet<Topic>();
+			}
+
 			/* write input to temporary file */
 			rawTweetOutStream = new PrintStream(new FileOutputStream(rawTweetFile));
-			rawTweetOutStream.print(input);
+			rawTweetOutStream.print(filter.filter(input));
 			rawTweetOutStream.close();
 			rawTweetOutStream = null;
-//			rawTweetOutStream = new FileOutputStream(rawTweetFile);
-//			rawTweetOutStream.write(input.getBytes());
-//			rawTweetOutStream.close();
-//			rawTweetOutStream = null;
 
 			Text2Vectors t2v = new Text2Vectors();
 
 			// form string array args and invoke main of Text2Vectors.
-			String[] argsT2v = { "--remove-stopwords", "true",
-					"--preserve-case", "false", "--input",
-					rawTweetDir.toString(), "--output", vectorsFile.getPath(),
+			String[] argsT2v = { 
+					"--remove-stopwords", "true",
+					"--preserve-case", "false",
+					"--input", rawTweetDir.toString(),
+					"--output", vectorsFile.getPath(),
 					"--keep-sequence" };
 			Text2Vectors.main(argsT2v);
 
 			Vectors2Topics v2t = new Vectors2Topics();
 
 			// form string array args and invoke main of Vectors2Topics.
-			String[] argsV2t = { "--num-iterations", "200", "--num-top-words",
-					"3", "--doc-topics-threshold", "0.26", "--input",
-					vectorsFile.getPath(), "--num-topics", "1",
+			String[] argsV2t = {
+					"--num-iterations", "200",
+					"--optimize-interval", "10",
+					"--num-top-words", "3",
+					"--doc-topics-threshold", "0.26",
+					"--input", vectorsFile.getPath(),
+					"--num-topics", "1",
 					// "--output-state", <output directory
 					// path>+"/output_state.gz",
 					 "--output-topic-keys", topicsFile.getPath()
@@ -105,9 +123,8 @@ public class TopicExtractorImpl implements TopicExtractor {
 				String[] parts  = line.split("\t");
 				if(parts.length != 3)
 					break;
-				for(String topicString : parts[2].split(" ")){
-					extractedTopics.add(new Topic(topicString));
-				}
+				extractedTopics.add(new Topic(parts[2].split(" ")));
+				
 			}
 			return extractedTopics;
 

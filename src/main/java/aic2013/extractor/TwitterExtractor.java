@@ -84,26 +84,12 @@ public class TwitterExtractor {
 							neo4jService.createPersonIfAbsent(user);
 							// HashtagEntity[] topics =
 							// status.getHashtagEntities();
+							Status originalStatus = status;
+							if(status.isRetweet()){
+								originalStatus = status.getRetweetedStatus();
+							}
 
-//							for (HashtagEntity tag : status
-//									.getHashtagEntities()) {
-//								Topic t = new Topic(tag.getText());
-//								if (status.isRetweet()) {
-//									neo4jService
-//											.createRelationIfAbsent(
-//													"RETWEETS",
-//													user,
-//													t);
-//								} else {
-//									neo4jService
-//											.createRelationIfAbsent(
-//													"TWEETS",
-//													user,
-//													t);
-//								}
-//							}
-
-							extractionCoordinator.doExtraction(status,
+							extractionCoordinator.doExtraction(originalStatus,
 								new TopicExtractionCallback() {
 
 									@Override
@@ -118,8 +104,8 @@ public class TwitterExtractor {
 											/* add hash tags to topics */
 											for (HashtagEntity tag : status
 													.getHashtagEntities()) {
-												extractedTopics.add(new Topic(tag
-														.getText()));
+												extractedTopics.add(new Topic(new String[]{tag
+														.getText()}));
 											}
 											for (Topic topic : extractedTopics) {
 												neo4jService
@@ -194,7 +180,7 @@ public class TwitterExtractor {
 			mongoDataAccess.forAll(mongoProcessor);
 			extractionCoordinator.awaitTermination(-1, TimeUnit.SECONDS);
 			// invoke the processor for every entry in the rdbms
-			userDataAcces.forAll(userProcessor);
+//			userDataAcces.forAll(userProcessor);
 		} finally {
 			if (emf != null && emf.isOpen()) {
 				emf.close();

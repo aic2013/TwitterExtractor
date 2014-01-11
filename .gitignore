@@ -4,3 +4,4 @@
 target/
 
 /hibernate.properties
+/neo4j.properties
